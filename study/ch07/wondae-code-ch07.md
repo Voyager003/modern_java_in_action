@@ -302,4 +302,67 @@ Stream<Character> stream = StreamSupport.stream(spliterator, true);
 ```
 StreamSupport.stream의 두번쨰 매개변수는 병렬 스트림로 만들지 판단하는 플래그이다.
 
-## 추가 학습
+## 추가 학습 : JMH 생성 및 세팅
+JMH(Java Microbenchmark Harness)는 JVM 기반 언어에서 마이크로벤치마크를 작성하고 실행하기 위한 프레임워크다.
+
+JMH는 JVM의 JIT(Just-In-Time) 컴파일러의 영향을 받는 코드 성능을 정확하게 측정할 수 있도록 설계되었다.
+
+### JMH의 주요 기능
+1.	정확한 측정: JMH는 벤치마크 측정에 있어 정확성을 보장하기 위해 다양한 기술을 사용한다. JIT 컴파일러의 영향을 최소화하고, JVM 웜업(warm-up) 기간을 관리하여 신뢰할 수 있는 결과를 제공.
+2.	다양한 측정 모드: JMH는 여러 가지 측정 모드를 지원합니다. 예를 들어 처리량, 평균 시간, 샘플 시간, 단일 실행 시간 등이 있다.
+3.	멀티스레드 벤치마킹: JMH는 멀티스레드 환경에서의 벤치마크를 지원 한다
+4.	강력한 설정 옵션: JMH는 벤치마크 설정을 세밀하게 조정할 수 있는 다양한 옵션을 제공한다. 예를 들어, 워크로드 반복 횟수, 워밍업 설정, 스레드 수, 시간 단위 등을 설정할 수 있다.
+
+### 사용법
+maven 혹은 gradle 기반 프로젝트를 생성하고 pom.xml에 다음을 추가한다.
+```
+<dependency>
+    <groupId>org.openjdk.jmh</groupId>
+    <artifactId>jmh-core</artifactId>
+    <version>1.34</version>
+</dependency>
+<dependency>
+    <groupId>org.openjdk.jmh</groupId>
+    <artifactId>jmh-generator-annprocess</artifactId>
+    <version>1.34</version>
+</dependency>
+```
+
+또는 아래와 같은 명령어를 쳐서도 가능하다.
+```bash
+$ mvn archetype:generate \
+    -DinteractiveMode=false \ 
+    -DarchetypeGroupId=org.openjdk.jmh \ 
+    -DarchetypeArtifactId=jmh-java-benchmark-archetype \ 
+    -DgroupId=[사용할 이름 (com.으로 시작하는 것)] \
+    -DartifactId=code-benchmark \
+    -Dversion=1
+```
+
+그 후 아래와 같이 코드를 작성하여 측정할 수 있다.
+```Java
+@State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+public class LoopTest {
+	@Setup
+	public void init() {
+        // 성능 측정 전 사전에 필요한 작업
+	}
+
+	@Benchmark
+	public void originLoopWithGetSize() {
+        // 성능을 측정할 코드 작성
+	}
+
+    public static void main(String[] args) throws IOException, RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(LoopTest.class.getSimpleName())
+                .warmupIterations(10)           // 사전 테스트 횟수
+                .measurementIterations(10)      // 실제 측정 횟수
+                .forks(1)                       // 
+                .build();
+        new Runner(opt).run();                  // 벤치마킹 시작
+    }
+}
+```
