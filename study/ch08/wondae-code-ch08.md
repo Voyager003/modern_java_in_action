@@ -273,3 +273,4 @@ List<String> list = Stream.of("a", "b", "c")
 
 #### Java 21 : 순차 컬렉션 (Sequenced Collection)
 Java 21에서는 순차적 컬렉션(SequencedCollection, SequencedSet, SequencedMap) 개념이 도입됐다. 이들은 반복과 접근 모두에서 예측 가능한 순서를 보장한다. 이는 순서가 일관되게 유지되어야 하는 컬렉션에 유용하다.
+![img](./sequencedcollectiondiagram20220216.jpg)
